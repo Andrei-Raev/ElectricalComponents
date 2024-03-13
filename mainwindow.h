@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTranslator>
+#include <QMessageBox>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -18,11 +19,13 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void UiSetUp();
     void on_actionRussian_triggered();
     void on_actionEnglish_triggered();
 
 private:
     QTranslator translator;
+    QMessageBox msgBox;
     Ui::MainWindow *ui;
 };
 #endif // MAINWINDOW_H
