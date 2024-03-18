@@ -6,16 +6,18 @@
 
 
 
-MainWindow::MainWindow(QWidget *parent):QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent)
+    :QMainWindow(parent),
+      ui(new Ui::MainWindow)
 {
 
-
+    ui->setupUi(this);
 
     if (translator.load(":/i18n/ElectroControl_ru_RU.ts")){
-        QApplication::instance() -> installTranslator(&translator);
+        qApp -> installTranslator(&translator);
     }
 
-    ui->setupUi(this);
+
 
     UiSetUp();
 
@@ -33,7 +35,7 @@ void  MainWindow::on_actionRussian_triggered()
 {
     // QApplication::instance()->removeTranslator(&tr_en);
     if (ui -> actionEnglish->isChecked()){
-        QApplication::instance() -> installTranslator(&translator);
+        qApp -> installTranslator(&translator);
         ui->retranslateUi(this);
         ui -> actionEnglish->setChecked(false);
         ui -> actionRussian->setChecked(true);
@@ -47,7 +49,7 @@ void  MainWindow::on_actionRussian_triggered()
 void MainWindow::on_actionEnglish_triggered()
 {
     if (ui -> actionRussian->isChecked()){
-        QApplication::instance() -> removeTranslator(&translator);
+        qApp -> removeTranslator(&translator);
         ui->retranslateUi(this);
         ui -> actionRussian->setChecked(false);
         ui -> actionEnglish->setChecked(true);
