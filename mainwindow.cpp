@@ -34,11 +34,11 @@ void  MainWindow::on_actionRussian_triggered()
     // QApplication::instance()->removeTranslator(&tr_en);
     if (ui -> actionEnglish->isChecked()){
         QApplication::instance() -> installTranslator(&translator);
-        ui->setupUi(this);
+        ui->retranslateUi(this);
         ui -> actionEnglish->setChecked(false);
         ui -> actionRussian->setChecked(true);
 
-        UiSetUp();
+        //UiSetUp();
     }else{
         ui -> actionRussian->setChecked(true);
     }
@@ -48,11 +48,11 @@ void MainWindow::on_actionEnglish_triggered()
 {
     if (ui -> actionRussian->isChecked()){
         QApplication::instance() -> removeTranslator(&translator);
-        ui->setupUi(this);
+        ui->retranslateUi(this);
         ui -> actionRussian->setChecked(false);
         ui -> actionEnglish->setChecked(true);
 
-        UiSetUp();
+        //UiSetUp();
 
     }else{
         ui -> actionEnglish->setChecked(true);
