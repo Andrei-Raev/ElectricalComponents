@@ -19,7 +19,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void UiSetUp();
+
     void on_actionRussian_triggered();
     void on_actionEnglish_triggered();
 
@@ -27,5 +27,8 @@ private:
     QTranslator translator;
     QMessageBox msgBox;
     Ui::MainWindow *ui;
+    void UiSetUp();
+    void openFile(QTabWidget* tabWidget);
+    QVector<QStringList> readCSVTable(const QString& filename);
 };
 #endif // MAINWINDOW_H
