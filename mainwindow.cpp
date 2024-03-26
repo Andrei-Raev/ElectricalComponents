@@ -139,7 +139,7 @@ void MainWindow::openFile(QTabWidget* tabWidget) {
         }
     }
 
-    tableWidget->setHorizontalHeaderLabels(QStringList() << tr("Id") << tr("Name")<<tr("Category")<<tr("Quantity")<<tr("Price")<<tr("Voltage")<<tr("Power usage")<<tr("In stock"));
+    tableWidget->setHorizontalHeaderLabels(QStringList() << "Id" << "Name"<<"Category"<<"Quantity"<<"Price"<<"Voltage"<<"Power usage"<<"In stock");
     tableWidget->setSortingEnabled(true);
     tableWidget-> setColumnHidden(0, true);
 
