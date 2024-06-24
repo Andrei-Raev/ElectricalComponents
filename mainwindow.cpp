@@ -5,6 +5,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "diagramma.h"
 #include <QFileDialog>
 #include <QMimeData>
 #include <QFileInfo>
@@ -62,6 +63,7 @@ void MainWindow::UiSetUp()
     connect(ui->actionFind, &QAction::triggered, this, [&]() { handleFindAction(); });
     connect(ui->actionExit_Find, &QAction::triggered, this, [&]() { handleEscape(); });
     connect(ui->actionAddRow, &QAction::triggered, this, [&]() { addRow(); });
+    connect(ui->actionStatistics_open, &QAction::triggered, this, [&]() { openStatisticWindow(); });
     connect(ui->actionRemoveRow, &QAction::triggered, this, [&]() { removeSelectedRow(); });
     connect(ui->actionAbout_author, &QAction::triggered, this, [&]() {
         msgBox.setText(tr("Author:\nRaev Andrei Sergeevich, IZTMS 2-3."));
@@ -103,6 +105,24 @@ void MainWindow::on_actionEnglish_triggered()
         ui->actionEnglish->setChecked(true);
     }
 }
+
+/**
+ * @brief Открытие окна статистики.
+ */
+void MainWindow::openStatisticWindow()
+    {
+        QTableView *currentView = qobject_cast<QTableView*>(ui->tabWidget->currentWidget());
+
+        if (!currentView) {
+            QMessageBox::warning(this, tr("No Table Selected"), tr("Please select a table to perform the action."));
+            return;
+        }
+        Diagramma *diagrammaWindow = new Diagramma();
+        diagrammaWindow->createCharts(currentView);
+        diagrammaWindow->show();
+    }
+
+
 
 /**
  * @brief Обработка нажатия на заголовок столбца.

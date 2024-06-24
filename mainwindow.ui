@@ -80,16 +80,17 @@
     <addaction name="actionFind"/>
     <addaction name="actionExit_Find"/>
    </widget>
-   <widget class="QMenu" name="menuStatistics_not_work">
+   <widget class="QMenu" name="menuStatistics">
     <property name="title">
-     <string>Statistics (not work)</string>
+     <string>Statistics</string>
     </property>
+    <addaction name="actionStatistics_open"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuSettings"/>
    <addaction name="menuInfo"/>
-   <addaction name="menuStatistics_not_work"/>
+   <addaction name="menuStatistics"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionRussian">
@@ -187,6 +188,11 @@
    </property>
    <property name="text">
     <string>Exit Find</string>
+   </property>
+  </action>
+  <action name="actionStatistics_open">
+   <property name="text">
+    <string>Open</string>
    </property>
   </action>
  </widget>

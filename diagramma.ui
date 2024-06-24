@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>1005</width>
+    <height>527</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,15 +16,48 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabWidget">
-     <widget class="QWidget" name="tab">
+     <property name="currentIndex">
+      <number>3</number>
+     </property>
+     <widget class="QWidget" name="price_power">
       <attribute name="title">
-       <string>Tab 1</string>
+       <string>Price from power</string>
       </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <layout class="QVBoxLayout" name="price_power_layout"/>
+       </item>
+      </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="power_voltage">
       <attribute name="title">
-       <string>Tab 2</string>
+       <string>Power from voltage</string>
       </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <layout class="QVBoxLayout" name="power_voltage_layout"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="components_in_category">
+      <attribute name="title">
+       <string>Number of components in each category</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <layout class="QVBoxLayout" name="components_in_category_layout"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="is_in_stock">
+      <attribute name="title">
+       <string>Percent of components in stock</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <layout class="QVBoxLayout" name="is_in_stock_layout"/>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>

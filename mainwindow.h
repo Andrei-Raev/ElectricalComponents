@@ -75,6 +75,11 @@ private:
     void UiSetUp();
 
     /**
+     * @brief Открытие окна статистики.
+     */
+    void openStatisticWindow();
+
+    /**
      * @brief Открытие файла.
      */
     void openFile();
