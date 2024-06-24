@@ -49,7 +49,6 @@
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
     <addaction name="actionClose"/>
-    <addaction name="actionRename"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
@@ -78,11 +77,19 @@
     </property>
     <addaction name="actionAddRow"/>
     <addaction name="actionRemoveRow"/>
+    <addaction name="actionFind"/>
+    <addaction name="actionExit_Find"/>
+   </widget>
+   <widget class="QMenu" name="menuStatistics_not_work">
+    <property name="title">
+     <string>Statistics (not work)</string>
+    </property>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuSettings"/>
    <addaction name="menuInfo"/>
+   <addaction name="menuStatistics_not_work"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionRussian">
@@ -119,7 +126,7 @@
   </action>
   <action name="actionSave">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Save</string>
@@ -131,6 +138,9 @@
    </property>
   </action>
   <action name="actionHelp">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Help</string>
    </property>
@@ -164,6 +174,19 @@
    </property>
    <property name="text">
     <string>Auto saving</string>
+   </property>
+  </action>
+  <action name="actionFind">
+   <property name="text">
+    <string>Find</string>
+   </property>
+  </action>
+  <action name="actionExit_Find">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Exit Find</string>
    </property>
   </action>
  </widget>

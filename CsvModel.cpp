@@ -40,6 +40,9 @@ void CsvModel::loadFromFile(const QString &filename)
 
     file.close();
     validateData();
+
+    originalData = csvData;
+
     beginResetModel();
     endResetModel();
 }
@@ -69,7 +72,6 @@ void CsvModel::saveToFile(){
         qDebug() << "Error: Unable to open file" << fileName;
         return;
     }
-
 
     QTextStream out(&file);
     out << headers.join(";") << "\n";
@@ -109,6 +111,7 @@ bool CsvModel::setData(const QModelIndex &index, const QVariant &value, int role
         csvData[index.row()][index.column()] = value.toString();
         validateData();  // Переvalidate данные после изменения
         emit dataChanged(index, index, {role});
+        originalData = csvData;
         return true;
     }
     return false;
@@ -163,7 +166,6 @@ Qt::ItemFlags CsvModel::flags(const QModelIndex &index) const
 
 void CsvModel::validateData()
 {
-    // isValid = true;
     invalidCells.clear();
     for (int row = 0; row < csvData.size(); ++row) {
         QStringList &line = csvData[row];
@@ -175,27 +177,20 @@ void CsvModel::validateData()
         line[0].toInt(&ok);
         if (!ok) {
             line[0] = "";
-            // isValid = false;
             invalidCells.insert(qMakePair(row, 0));
-
-            qDebug() << line[0] << "id";
         }
 
         // Validate quantity
         line[3].toInt(&ok);
         if (!ok) {
             line[3] = "";
-            // isValid = false;
             invalidCells.insert(qMakePair(row, 3));
-
-            qDebug() << line[3] << "qua";
         }
 
         // Validate price
         line[4].toFloat(&ok);
         if (!ok) {
             line[4] = "";
-            // isValid = false;
             invalidCells.insert(qMakePair(row, 4));
         }
 
@@ -203,47 +198,79 @@ void CsvModel::validateData()
         line[5].toInt(&ok);
         if (!ok) {
             line[5] = "";
-            // isValid = false;
             invalidCells.insert(qMakePair(row, 5));
-
-            qDebug() << line[5] << "volt";
         }
 
         // Validate power_usage
         line[6].toInt(&ok);
         if (!ok) {
             line[6] = "";
-            // isValid = false;
             invalidCells.insert(qMakePair(row, 6));
-
-            qDebug() << line[6] << "pu";
         }
 
         // Validate in_stock
         if (line[7] != "true" && line[7] != "false") {
             line[7] = "";
-            // isValid = false;
             invalidCells.insert(qMakePair(row, 7));
-
-            qDebug() << line[7] << "is_s";
         }
     }
 }
 
-// Добавим метод для инициализации пустыми данными
 void CsvModel::initializeEmpty(QString &filename)
 {
     fileName = filename;
     csvData.clear();
 
-    // Инициализация пустыми строками, добавим одну строку с пустыми значениями
     QStringList emptyRow(headers.size(), "");
     csvData.append(emptyRow);
 
-    // Устанавливаем валидность данных, так как таблица пустая, считаем её валидной
     isValid = true;
 
-    // Обновляем модель
     beginResetModel();
+    endResetModel();
+}
+
+void CsvModel::sort(int column, Qt::SortOrder order)
+{
+    beginResetModel();
+    if (order == Qt::AscendingOrder) {
+        std::sort(csvData.begin(), csvData.end(),
+                  [column](const QStringList &a, const QStringList &b) {
+                      return a[column] < b[column];
+                  });
+    } else {
+        std::sort(csvData.begin(), csvData.end(),
+                  [column](const QStringList &a, const QStringList &b) {
+                      return a[column] > b[column];
+                  });
+    }
+    endResetModel();
+}
+
+void CsvModel::setFilter(const QString &filter)
+{
+    csvData = originalData;
+
+    if (filter.isEmpty()) {
+        return;
+    }
+
+    beginResetModel();
+    csvData.erase(
+        std::remove_if(csvData.begin(), csvData.end(),
+                       [filter](const QStringList &row) {
+                           return std::none_of(row.begin(), row.end(),
+                                               [&filter](const QString &cell) {
+                                                   return cell.contains(filter, Qt::CaseInsensitive);
+                                               });
+                       }),
+        csvData.end());
+    endResetModel();
+}
+
+void CsvModel::clearFilter()
+{
+    beginResetModel();
+    csvData = originalData;
     endResetModel();
 }
