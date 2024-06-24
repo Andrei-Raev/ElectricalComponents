@@ -1,155 +1,224 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
-#include <QTranslator>
-#include <QMessageBox>
 #include <QFileDialog>
-#include <QTabWidget>
-#include <QTableWidget>
-#include <QTableWidgetItem>
-#include <QFile>
-#include <QTextStream>
-#include <QStringList>
+#include <QMimeData>
+#include <QFileInfo>
 #include <QDebug>
-
-
+#include <QTabWidget>
+#include <QVBoxLayout>
+#include <QShortcut>
 
 MainWindow::MainWindow(QWidget *parent)
-    :QMainWindow(parent),
-      ui(new Ui::MainWindow)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
 {
-
     ui->setupUi(this);
+    setAcceptDrops(true);
 
-    if (translator.load(":/i18n/ElectroControl_ru_RU.ts")){
-        qApp -> installTranslator(&translator);
+    if (translator.load(":/i18n/ElectroControl_ru_RU.ts")) {
+        qApp->installTranslator(&translator);
     }
- ui->retranslateUi(this);
-
+    ui->retranslateUi(this);
 
     UiSetUp();
-
-
 }
 
-void MainWindow::UiSetUp(){
-    connect(ui->actionEnglish, &QAction::triggered, this, [&]() {on_actionEnglish_triggered(); });
-    connect(ui->actionRussian, &QAction::triggered, this, [&]() {on_actionRussian_triggered(); });
-
-    connect(ui -> actionOpen, &QAction::triggered, this, [&]() {openFile(ui -> tabWidget); });
-
-    connect(ui->actionAbout_author, &QAction::triggered, this, [&]() {msgBox.setText(tr("Author:\nRaev Andrei Sergeevich, IZTMS 2-3."));msgBox.setIcon(QMessageBox::Information);msgBox.exec();});
-}
-
-void  MainWindow::on_actionRussian_triggered()
+void MainWindow::UiSetUp()
 {
-    if (ui -> actionEnglish->isChecked()){
-        qApp -> installTranslator(&translator);
+    connect(ui->actionEnglish, &QAction::triggered, this, [&]() { on_actionEnglish_triggered(); });
+    connect(ui->actionRussian, &QAction::triggered, this, [&]() { on_actionRussian_triggered(); });
+
+    connect(ui->actionOpen, &QAction::triggered, this, [&]() { openFile(); });
+    connect(ui->actionSave, &QAction::triggered, this, [&]() { saveFile(); });
+
+    QShortcut *shortcutSave = new QShortcut(QKeySequence("Ctrl+S"), this);
+    connect(shortcutSave, &QShortcut::activated, this, &MainWindow::saveFile);
+
+    QShortcut *shortcutOpen = new QShortcut(QKeySequence("Ctrl+O"), this);
+    connect(shortcutOpen, &QShortcut::activated, this, &MainWindow::openFile);
+
+    QShortcut *shortcutNew = new QShortcut(QKeySequence("Ctrl+N"), this);
+    connect(shortcutNew, &QShortcut::activated, this, &MainWindow::newFile);
+
+    connect(ui->actionAddRow, &QAction::triggered, this, [&]() {
+        QTableView *currentView = qobject_cast<QTableView*>(ui->tabWidget->currentWidget());
+        if (currentView) {
+            CsvModel *model = qobject_cast<CsvModel*>(currentView->model());
+            if (model) {
+                model->addRow(QStringList(model->columnCount(), ""));
+            }
+        }
+    });
+
+    connect(ui->actionRemoveRow, &QAction::triggered, this, [&]() {
+        QTableView *currentView = qobject_cast<QTableView*>(ui->tabWidget->currentWidget());
+        if (currentView) {
+            QItemSelectionModel *select = currentView->selectionModel();
+            CsvModel *model = qobject_cast<CsvModel*>(currentView->model());
+            if (model && select->hasSelection()) {
+                model->removeRow(select->selectedRows().first().row());
+            }
+        }
+    });
+
+    connect(ui->actionAbout_author, &QAction::triggered, this, [&]() {
+        msgBox.setText(tr("Author:\nRaev Andrei Sergeevich, IZTMS 2-3."));
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.exec();
+    });
+}
+
+void MainWindow::on_actionRussian_triggered()
+{
+    if (ui->actionEnglish->isChecked()) {
+        qApp->installTranslator(&translator);
         ui->retranslateUi(this);
-        ui -> actionEnglish->setChecked(false);
-        ui -> actionRussian->setChecked(true);
-    }else{
-        ui -> actionRussian->setChecked(true);
+        ui->actionEnglish->setChecked(false);
+        ui->actionRussian->setChecked(true);
+    } else {
+        ui->actionRussian->setChecked(true);
     }
 }
 
 void MainWindow::on_actionEnglish_triggered()
 {
-    if (ui -> actionRussian->isChecked()){
-        qApp -> removeTranslator(&translator);
+    if (ui->actionRussian->isChecked()) {
+        qApp->removeTranslator(&translator);
         ui->retranslateUi(this);
-        ui -> actionRussian->setChecked(false);
-        ui -> actionEnglish->setChecked(true);
-    }else{
-        ui -> actionEnglish->setChecked(true);
+        ui->actionRussian->setChecked(false);
+        ui->actionEnglish->setChecked(true);
+    } else {
+        ui->actionEnglish->setChecked(true);
     }
 }
 
-
-QVector<QStringList> MainWindow::readCSVTable(const QString& filename) {
-    QVector<QStringList> data;
-
-    QFile file(filename);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qDebug() << "Error: Unable to open file" << filename;
-        return data;
-    }
-
-    QTextStream in(&file);
-    bool firstLine = true;
-    while (!in.atEnd()) {
-        QStringList line = in.readLine().split(";");
-
-        if (firstLine) {
-            firstLine = false;
-            if (line.size() != 8) {
-                qDebug() << "Error: Incorrect number of columns in the header";
-                return data;
-            }
-            continue; // Skip processing the header line
-        }
-
-        if (line.size() != 8) {
-            qDebug() << "Error: Incorrect number of columns in data";
-            return data;
-        }
-
-        bool ok;
-        line[0].toInt(&ok);
-        if (!ok) {
-            qDebug() << "Error: Invalid id format";
-            return data;
-        }
-
-        // Add more data integrity checks for other columns here
-//        delete line[0];
-        data.append(line);
-    }
-
-    file.close();
-    return data;
-}
-
-
-void MainWindow::openFile(QTabWidget* tabWidget) {
-    QString filePath = QFileDialog::getOpenFileName(nullptr, "Select CSV File", "", "CSV files (*.csv)");
+void MainWindow::openFile()
+{
+    QString filePath = QFileDialog::getOpenFileName(nullptr,
+                                                    "Select CSV File",
+                                                    "",
+                                                    "CSV files (*.csv)");
 
     if (filePath.isEmpty()) {
         qDebug() << "Error: No file selected";
         return;
     }
 
-    QVector<QStringList> data = readCSVTable(filePath);
+    CsvModel *model = new CsvModel(this);
+    model->loadFromFile(filePath);
 
-    if (data.isEmpty()) {
-        qDebug() << "Error: Failed to load data from file";
+    if (!model->isValid) {
+        QMessageBox::warning(this, tr("Invalid File"), tr("The CSV file is invalid."));
+        delete model;
         return;
     }
 
-    QTableWidget* tableWidget = new QTableWidget();
-    int numRows = data.size();
-    int numCols = data[0].size();
+    createNewTableTab(filePath, model);
+}
 
-    tableWidget->setRowCount(numRows);
-    tableWidget->setColumnCount(numCols);
-
-    for (int i = 0; i < numRows; ++i) {
-        for (int j = 0; j < numCols; ++j) {
-            tableWidget->setItem(i, j, new QTableWidgetItem(data[i][j]));
-        }
+void MainWindow::saveFile()
+{
+    QTableView *currentView = qobject_cast<QTableView*>(ui->tabWidget->currentWidget());
+    if (!currentView) {
+        QMessageBox::warning(this, tr("No Tab Selected"), tr("Please select a tab to save."));
+        return;
     }
 
-    tableWidget->setHorizontalHeaderLabels(QStringList() << "Id" << "Name"<<"Category"<<"Quantity"<<"Price"<<"Voltage"<<"Power usage"<<"In stock");
-    tableWidget->setSortingEnabled(true);
-    tableWidget-> setColumnHidden(0, true);
+    CsvModel *model = qobject_cast<CsvModel*>(currentView->model());
+    if (!model) {
+        qDebug() << "Error: No model found";
+        return;
+    }
 
-    //tabWidget -> removeTab(0);
-    tabWidget->addTab(tableWidget, filePath.split("/")[filePath.split("/").length()]);
-    tabWidget->setEnabled(true);
+    QString filePath = QFileDialog::getSaveFileName(nullptr,
+                                                    "Save CSV File",
+                                                    "",
+                                                    "CSV files (*.csv)");
 
+    if (filePath.isEmpty()) {
+        qDebug() << "Error: No file selected";
+        return;
+    }
+
+    model->saveToFile(filePath);
+}
+
+void MainWindow::newFile()
+{
+    // Создаем новый объект CsvModel
+    CsvModel *model = new CsvModel(this);
+
+    // Инициализируем его пустыми данными
+    model->initializeEmpty();
+
+    // Создаем новую вкладку для этого файла
+    createNewTableTab("Untitled.csv", model);
 }
 
 
+
+
+QTableView* MainWindow::createNewTableTab(const QString &filePath, CsvModel *model)
+{
+    QTableView *tableView = new QTableView;
+    tableView->setModel(model);
+
+    QString tabName = QFileInfo(filePath).fileName();
+    ui->tabWidget->addTab(tableView, tabName);
+    ui->tabWidget->setCurrentWidget(tableView);
+
+    return tableView;
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->mimeData()->hasUrls()) {
+        QList<QUrl> urlList = event->mimeData()->urls();
+        if (!urlList.isEmpty() && QFileInfo(urlList.first().toLocalFile()).suffix() == "csv") {
+            event->acceptProposedAction();
+        } else {
+            event->ignore();
+        }
+    } else {
+        event->ignore();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+    const QMimeData *mimeData = event->mimeData();
+
+    if (mimeData->hasUrls()) {
+        QList<QUrl> urlList = mimeData->urls();
+        if (!urlList.isEmpty()) {
+            QString filePath = urlList.first().toLocalFile();
+            QFileInfo fileInfo(filePath);
+
+            if (fileInfo.suffix() == "csv") {
+                CsvModel *model = new CsvModel(this);
+                model->loadFromFile(filePath);
+
+                if (!model->isValid) {
+                    QMessageBox::warning(this, tr("Invalid File"), tr("The CSV file is invalid."));
+                    delete model;
+                    event->ignore();
+                    return;
+                }
+
+                createNewTableTab(filePath, model);
+                event->acceptProposedAction();
+            } else {
+                QMessageBox::warning(this, tr("Unsupported File"),
+                                     tr("Only .csv files are supported"));
+                event->ignore();
+            }
+        } else {
+            event->ignore();
+        }
+    } else {
+        event->ignore();
+    }
+}
 
 MainWindow::~MainWindow()
 {
