@@ -143,6 +143,12 @@ private:
      */
     QTableView* createNewTableTab(const QString &filePath, CsvModel *model);
 
+    void saveSettings();
+    void loadSettings();
+
+    void changeAutoSave();
+    void applyAutoSave(bool state);
+
 private slots:
     /**
      * @brief Обработка нажатия на заголовок столбца.

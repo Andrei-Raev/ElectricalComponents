@@ -1,19 +1,31 @@
+// diagramma.cpp
+
 #include "diagramma.h"
 #include "ui_diagramma.h"
 #include "CsvModel.h"
 
+/**
+ * @brief Конструктор класса Diagramma.
+ * @param parent Указатель на родительский виджет.
+ */
 Diagramma::Diagramma(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::Diagramma)
+    : QWidget(parent), ui(new Ui::Diagramma)
 {
     ui->setupUi(this);
 }
 
+/**
+ * @brief Деструктор класса Diagramma.
+ */
 Diagramma::~Diagramma()
 {
     delete ui;
 }
 
+/**
+ * @brief Создает диаграммы на основе данных представления таблицы.
+ * @param currentView Указатель на текущее представление таблицы.
+ */
 void Diagramma::createCharts(QTableView *currentView) {
     createPriceFromPowerChart(currentView);
     createPowerFromVoltageChart(currentView);
@@ -21,6 +33,10 @@ void Diagramma::createCharts(QTableView *currentView) {
     createComponentsInStockChart(currentView);
 }
 
+/**
+ * @brief Создает диаграмму зависимости цены от мощности.
+ * @param currentView Указатель на текущее представление таблицы.
+ */
 void Diagramma::createPriceFromPowerChart(QTableView *currentView) {
     CsvModel *model = qobject_cast<CsvModel*>(currentView->model());
 
@@ -36,7 +52,7 @@ void Diagramma::createPriceFromPowerChart(QTableView *currentView) {
 
     QChart *chart = new QChart();
     chart->addSeries(series);
-    chart->setTitle("Price from Power");
+    chart->setTitle("Зависимость цены от мощности");
     chart->createDefaultAxes();
 
     QChartView *chartView = new QChartView(chart);
@@ -47,6 +63,10 @@ void Diagramma::createPriceFromPowerChart(QTableView *currentView) {
     }
 }
 
+/**
+ * @brief Создает диаграмму зависимости мощности от напряжения.
+ * @param currentView Указатель на текущее представление таблицы.
+ */
 void Diagramma::createPowerFromVoltageChart(QTableView *currentView) {
     CsvModel *model = qobject_cast<CsvModel*>(currentView->model());
 
@@ -62,12 +82,8 @@ void Diagramma::createPowerFromVoltageChart(QTableView *currentView) {
 
     QChart *chart = new QChart();
     chart->addSeries(series);
-    chart->setTitle("Power from Voltage");
+    chart->setTitle("Зависимость мощности от напряжения");
     chart->createDefaultAxes();
-
-    // Логика для создания трендовой линии (например, используя метод наименьших квадратов, если вставите)
-    // QLineSeries *trendLine = new QLineSeries();
-    // chart->addSeries(trendLine);
 
     QChartView *chartView = new QChartView(chart);
 
@@ -77,6 +93,10 @@ void Diagramma::createPowerFromVoltageChart(QTableView *currentView) {
     }
 }
 
+/**
+ * @brief Создает диаграмму количества компонентов в каждой категории.
+ * @param currentView Указатель на текущее представление таблицы.
+ */
 void Diagramma::createComponentsInCategoryChart(QTableView *currentView) {
     CsvModel *model = qobject_cast<CsvModel*>(currentView->model());
 
@@ -95,7 +115,7 @@ void Diagramma::createComponentsInCategoryChart(QTableView *currentView) {
 
     QChart *chart = new QChart();
     chart->addSeries(series);
-    chart->setTitle("Number of Components in Each Category");
+    chart->setTitle("Количество компонентов в каждой категории");
     chart->createDefaultAxes();
 
     QChartView *chartView = new QChartView(chart);
@@ -106,6 +126,10 @@ void Diagramma::createComponentsInCategoryChart(QTableView *currentView) {
     }
 }
 
+/**
+ * @brief Создает диаграмму наличия компонентов на складе.
+ * @param currentView Указатель на текущее представление таблицы.
+ */
 void Diagramma::createComponentsInStockChart(QTableView *currentView) {
     CsvModel *model = qobject_cast<CsvModel*>(currentView->model());
 
@@ -118,8 +142,8 @@ void Diagramma::createComponentsInStockChart(QTableView *currentView) {
     }
 
     QPieSeries *series = new QPieSeries();
-    series->append("In Stock", inStockCount);
-    series->append("Out of Stock", totalCount - inStockCount);
+    series->append("В наличии", inStockCount);
+    series->append("Нет в наличии", totalCount - inStockCount);
 
     QPieSlice *sliceInStock = series->slices().at(0);
     sliceInStock->setLabel(sliceInStock->label() + QStringLiteral(": %1%").arg(100 * sliceInStock->value() / totalCount, 0, 'f', 1));
@@ -129,7 +153,7 @@ void Diagramma::createComponentsInStockChart(QTableView *currentView) {
 
     QChart *chart = new QChart();
     chart->addSeries(series);
-    chart->setTitle("Percent of Components in Stock");
+    chart->setTitle("Процент компонентов в наличии");
 
     QChartView *chartView = new QChartView(chart);
 

@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
     setAcceptDrops(true);
 
     if (translator.load(":/i18n/ElectroControl_ru_RU.ts")) {
@@ -33,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->retranslateUi(this);
 
     UiSetUp();
+    loadSettings();
 }
 
 /**
@@ -70,6 +72,8 @@ void MainWindow::UiSetUp()
         msgBox.setIcon(QMessageBox::Information);
         msgBox.exec();
     });
+
+
 
     if (ui->tabWidget->widget(0)->objectName() == QString("empty")) {
         ui->tabWidget->removeTab(0);
@@ -205,6 +209,33 @@ void MainWindow::handleEscape()
 
     ui->actionExit_Find->setEnabled(false);
 }
+
+void MainWindow::changeAutoSave()
+{
+    bool state = ui->actionAuto_saving->isChecked();
+    applyAutoSave(state);
+}
+
+void MainWindow::applyAutoSave(bool state)
+{
+    int tabCount = ui->tabWidget->count();
+
+    if (tabCount == 0) {
+        QMessageBox::information(this, tr("No Models Opened"), tr("There are no models open to apply the auto-save setting."));
+        return;
+    }
+
+    for (int i = 0; i < tabCount; ++i) {
+        QTableView* view = qobject_cast<QTableView*>(ui->tabWidget->widget(i));
+        if (view) {
+            CsvModel* model = qobject_cast<CsvModel*>(view->model());
+            if (model) {
+                model->setAutoSave(state);
+            }
+        }
+    }
+}
+
 
 /**
  * @brief Удаление выбранной строки.
@@ -364,9 +395,14 @@ QTableView* MainWindow::createNewTableTab(const QString &filePath, CsvModel *mod
     QTableView *tableView = new QTableView;
     tableView->setModel(model);
 
+    tableView->setSortingEnabled(true);
+    tableView->horizontalHeader()->setSortIndicatorShown(true);
+
     QString tabName = QFileInfo(filePath).fileName();
     ui->tabWidget->addTab(tableView, tabName);
     ui->tabWidget->setCurrentWidget(tableView);
+
+    model->setAutoSave(ui->actionAuto_saving->isChecked());
 
     return tableView;
 }
@@ -429,10 +465,35 @@ void MainWindow::dropEvent(QDropEvent *event)
     }
 }
 
+void MainWindow::saveSettings()
+{
+    QSettings settings("Nerrow inc.", "ElectroControl");
+
+    settings.setValue("autoSaving", ui->actionAuto_saving->isChecked());
+    settings.setValue("english", ui->actionEnglish->isChecked());
+    settings.setValue("russian", ui->actionRussian->isChecked());
+}
+
+void MainWindow::loadSettings()
+{
+    QSettings settings("Nerrow inc.", "ElectroControl");
+
+    ui->actionAuto_saving->setChecked(settings.value("autoSaving", true).toBool());
+
+    ui->actionEnglish->setChecked(settings.value("english", false).toBool());
+    ui->actionRussian->setChecked(settings.value("russian", true).toBool());
+
+    if (settings.value("english", false).toBool()) {
+        qApp->removeTranslator(&translator);
+        ui->retranslateUi(this);
+    }
+}
+
 /**
  * @brief Деструктор класса MainWindow.
  */
 MainWindow::~MainWindow()
 {
+    saveSettings();
     delete ui;
 }
